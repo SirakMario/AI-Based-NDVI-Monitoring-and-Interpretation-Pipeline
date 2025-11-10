@@ -1,14 +1,18 @@
-# Start from the official n8n image
-FROM n8nio/n8n:latest
+# Use the official n8n image
+FROM docker.n8n.io/n8nio/n8n:latest
 
-# Switch to root to install packages globally
+# Switch to root to install global packages
 USER root
 
-# Install @turf/turf globally to avoid path conflicts
-RUN npm install -g @turf/turf
+# Install @turf/turf globally
+RUN npm install -g @turf/turf && \
+    ln -sf /usr/local/bin/n8n /usr/bin/n8n
 
-# Switch back to n8n user
+# Switch back to node user (for security)
 USER node
 
-# Start n8n
-CMD ["n8n", "start"]
+# Expose the default n8n port
+EXPOSE 5678
+
+# Run n8n
+CMD ["n8n"]
