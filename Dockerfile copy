@@ -1,0 +1,47 @@
+# Use Node 18 Alpine for smaller, compatible image
+FROM node:18-alpine
+
+# Define n8n version as build argument
+ARG N8N_VERSION
+
+# Exit if N8N_VERSION is not provided
+RUN if [ -z "$N8N_VERSION" ]; then echo "The N8N_VERSION argument is missing!" ; exit 1 ; fi
+
+# Install system and Python build dependencies
+RUN apk add --update --no-cache \
+    graphicsmagick \
+    tzdata \
+    python3 \
+    py3-pip \
+    python3-dev \
+    gfortran \
+    musl-dev \
+    gcc \
+    g++ \
+    libffi-dev \
+    openssl-dev \
+    lapack-dev \
+    blas-dev \
+    geos-dev \
+    proj-dev \
+    build-base \
+    ca-certificates
+
+# Upgrade pip safely for Python package builds
+RUN pip3 install --upgrade pip --break-system-packages
+
+# Copy Python dependencies if you have a requirements.txt
+COPY requirements.txt /tmp/requirements.txt
+RUN pip3 install --no-cache-dir --break-system-packages -r /tmp/requirements.txt
+
+# Set custom user (optional)
+USER root
+
+# Install n8n globally using the provided version
+RUN npm_config_user=root npm install -g n8n@${N8N_VERSION}
+
+# Set working directory
+WORKDIR /data
+
+# Default command
+CMD ["n8n"]
